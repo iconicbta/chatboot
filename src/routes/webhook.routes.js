@@ -8,14 +8,15 @@ const {
 } = require("../controllers/webhook.controller");
 
 /**
- * RUTA PARA EL BOT (WhatsApp/Twilio)
- * Recibe los mensajes entrantes de los clientes
+ * RUTA PARA EL BOT (WhatsApp/Meta)
+ * GET: Se usa para la validación inicial (el challenge)
+ * POST: Se usa para recibir los mensajes reales
  */
+router.get("/", handleIncomingMessage); // 🚩 ESTA ES LA QUE FALTA
 router.post("/", handleIncomingMessage);
 
 /**
  * RUTA PARA EL DASHBOARD (Frontend)
- * Obtiene el listado de todos los prospectos desde MongoDB
  */
 router.get("/leads", getLeads);
 
