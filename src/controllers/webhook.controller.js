@@ -1,4 +1,6 @@
 // src/controllers/webhook.controller.js
+const { processMessage } = require("../services/message.service");
+const Lead = require("../models/Lead"); // Asegúrate de que este archivo exista
 
 const handleIncomingMessage = async (req, res) => {
   // 1. VALIDACIÓN DEL WEBHOOK (Meta envía un GET)
@@ -7,10 +9,8 @@ const handleIncomingMessage = async (req, res) => {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    // Comparamos con la variable que acabas de mostrar en la foto
     if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
       console.log("✅ Webhook verificado con éxito");
-      // CRÍTICO: Enviar el challenge como texto plano y status 200
       return res.status(200).send(challenge);
     } else {
       console.log("❌ Error de validación: Tokens no coinciden");
@@ -26,9 +26,14 @@ const handleIncomingMessage = async (req, res) => {
 
     if (value?.messages) {
       console.log("📩 Nuevo mensaje recibido");
-      // Aquí va tu lógica de processMessage...
-    }
+      const message = value.messages[0];
+      const senderPhone = message.from;
+      const incomingMessage = message.text?.body;
 
+      if (incomingMessage) {
+        await processMessage(incomingMessage, senderPhone);
+      }
+    }
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error procesando mensaje:", error);
@@ -36,4 +41,22 @@ const handleIncomingMessage = async (req, res) => {
   }
 };
 
-module.exports = { handleIncomingMessage };
+/**
+ * ESTA ES LA FUNCIÓN QUE FALTABA
+ */
+const getLeads = async (req, res) => {
+  try {
+    // Buscamos todos los leads en MongoDB
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json(leads);
+  } catch (error) {
+    console.error("❌ Error al obtener leads:", error);
+    res.status(500).json({ error: "Error al obtener leads" });
+  }
+};
+
+// 🚩 IMPORTANTE: Exportar ambas para que el archivo de rutas las vea
+module.exports = { 
+  handleIncomingMessage, 
+  getLeads 
+};
