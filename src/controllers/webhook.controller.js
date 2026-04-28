@@ -11,7 +11,7 @@ const handleIncomingMessage = async (req, res) => {
     if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
       return res.status(200).send(challenge);
     }
-    return res.sendStatus(403);
+    return res.sendStatus(200);
   }
 
   try {
