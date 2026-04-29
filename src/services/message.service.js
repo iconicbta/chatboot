@@ -1,4 +1,3 @@
-// src/services/message.service.js
 const Lead = require("../models/Lead");
 const axios = require("axios");
 
@@ -27,9 +26,15 @@ const SUBAREAS = {
  * FUNCIÓN PARA ENVIAR MENSAJES A WHATSAPP CLOUD API
  */
 const sendWhatsAppMessage = async (toNumber, messageText) => {
+  // 1. IGNORAR MENSAJES DE PRUEBA DE META
+  if (toNumber.startsWith('34021')) {
+    console.log(🧪 Mensaje de prueba de Meta ignorado para ${toNumber});
+    return;
+  }
+
   try {
     await axios.post(
-      `https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages`,
+      https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages,
       {
         messaging_product: "whatsapp",
         to: toNumber,
@@ -38,12 +43,12 @@ const sendWhatsAppMessage = async (toNumber, messageText) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.WA_TOKEN}`,
+          Authorization: Bearer ${process.env.WA_TOKEN},
           "Content-Type": "application/json",
         },
       },
     );
-    console.log(`➡️ Mensaje enviado a ${toNumber}`);
+    console.log(➡️ Mensaje enviado a ${toNumber});
   } catch (error) {
     console.error(
       "❌ Error enviando a Meta:",
@@ -89,7 +94,7 @@ const processMessage = async (message, userPhone) => {
     } else {
       state.data.name = msg;
       state.step = "ASK_AREA";
-      responseText = `Mucho gusto, ${msg} 😊\n¿En qué área legal necesitas ayuda?\n\n1. Derecho Civil\n2. Derecho Penal\n3. Derecho Laboral\n4. Derecho de Familia`;
+      responseText = Mucho gusto, ${msg} 😊\n¿En qué área legal necesitas ayuda?\n\n1. Derecho Civil\n2. Derecho Penal\n3. Derecho Laboral\n4. Derecho de Familia;
     }
   }
 
@@ -102,9 +107,9 @@ const processMessage = async (message, userPhone) => {
       state.data.areaKey = msg;
       state.step = "ASK_SUBAREA";
       const options = SUBAREAS[msg]
-        .map((item, i) => `${i + 1}. ${item}`)
-        .join("\n");
-      responseText = `Seleccionaste ${AREAS[msg]}.\n¿Qué tipo de proceso necesitas?\n${options}`;
+       .map((item, i) => ${i + 1}. ${item})
+       .join("\n");
+      responseText = Seleccionaste ${AREAS[msg]}.\n¿Qué tipo de proceso necesitas?\n${options};
     }
   }
 
@@ -140,7 +145,7 @@ const processMessage = async (message, userPhone) => {
     } else {
       state.data.description = msg;
       state.step = "SHOW_PRICE";
-      responseText = `Gracias por la información 🙌\n\nPara ${state.data.subarea}, nuestros honorarios están entre:\n$500.000 y $2.000.000.\n\n¿Deseas continuar?\n\n1. Sí, hablar con abogado\n2. Prefiero que me contacten luego`;
+      responseText = Gracias por la información 🙌\n\nPara ${state.data.subarea}, nuestros honorarios están entre:\n$500.000 y $2.000.000.\n\n¿Deseas continuar?\n\n1. Sí, hablar con abogado\n2. Prefiero que me contacten luego;
     }
   }
 
@@ -156,7 +161,7 @@ const processMessage = async (message, userPhone) => {
           subarea: state.data.subarea,
           amount: state.data.amount,
           description: state.data.description,
-          contactPreference: msg === "1" ? "Inmediato" : "Posterior",
+          contactPreference: msg === "1"? "Inmediato" : "Posterior",
         });
         await newLead.save();
         console.log("✅ Lead guardado exitosamente");
@@ -166,8 +171,8 @@ const processMessage = async (message, userPhone) => {
 
       responseText =
         msg === "1"
-          ? `Perfecto ${state.data.name} 🙌 Enviamos tu caso al área de ${state.data.area}. Un asesor te contactará pronto.`
-          : `Perfecto ${state.data.name} 👍 Hemos registrado tu solicitud para contacto posterior.`;
+         ? Perfecto ${state.data.name} 🙌 Enviamos tu caso al área de ${state.data.area}. Un asesor te contactará pronto.
+          : Perfecto ${state.data.name} 👍 Hemos registrado tu solicitud para contacto posterior.;
 
       delete userState[userPhone]; // Finalizamos el estado
     } else {
