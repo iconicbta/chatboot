@@ -1,31 +1,42 @@
 const Lead = require("../models/Lead");
 const { processMessage } = require("../services/message.service");
 
-// 1. Manejador para WhatsApp (Validación GET y Mensajes POST)
-const handleIncomingMessage = async (req, res) => {
-  if (req.method === "GET") {
-    const mode = req.query["hub.mode"];
-    const token = req.query["hub.verify_token"];
-    const challenge = req.query["hub.challenge"];
+// 1. GET = Solo verificación de Meta
+const verifyWebhook = (req, res) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
 
-    if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
-      return res.status(200).send(challenge);
-    }
-    return res.sendStatus(200);
+  if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
+    console.log("Webhook verificado correctamente");
+    return res.status(200).send(challenge);
   }
+  return res.sendStatus(403); // Era 200, debe ser 403 si falla
+};
 
+// 2. POST = Recibir mensajes - AQUÍ ESTÁ EL CAMBIO CLAVE
+const handleIncomingMessage = (req, res) => {
+  // QUITA EL ASYNC ^^^^^
+
+  // 1. RESPONDE A META YA MISMO, antes de cualquier await
+  res.sendStatus(200);
+
+  // 2. Después procesas. No uses await aquí porque ya respondiste
   try {
     const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
     if (message?.text?.body) {
-      await processMessage(message.text.body, message.from);
+      // No pongas await. Deja que corra en background
+      processMessage(message.text.body, message.from).catch(err => {
+        console.error("Error procesando mensaje:", err);
+      });
     }
-    res.sendStatus(200);
   } catch (e) {
-    res.sendStatus(500);
+    console.error("Error en webhook:", e);
   }
 };
 
-// 2. Manejador para el Dashboard (Listado de clientes)
+// 3. Dashboard
 const getLeads = async (req, res) => {
   try {
     const leads = await Lead.find().sort({ createdAt: -1 });
@@ -35,5 +46,4 @@ const getLeads = async (req, res) => {
   }
 };
 
-// EXPORTACIÓN ÚNICA (Asegúrate de que estas líneas estén al final)
-module.exports = { handleIncomingMessage, getLeads };
+module.exports = { verifyWebhook, handleIncomingMessage, getLeads };
