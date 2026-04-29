@@ -32,8 +32,13 @@ const sendWhatsAppMessage = async (toNumber, messageText) => {
     return;
   }
 
+  // 2. DEBUG: VER QUÉ VALORES ESTÁ USANDO
+  console.log('🔍 DEBUG - Phone ID:', process.env.WA_PHONE_NUMBER_ID);
+  console.log('🔍 DEBUG - Token existe:',!!process.env.WA_TOKEN);
+  console.log('🔍 DEBUG - Enviando a:', toNumber);
+
   try {
-    await axios.post(
+    const response = await axios.post(
       `https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: "whatsapp",
@@ -48,12 +53,13 @@ const sendWhatsAppMessage = async (toNumber, messageText) => {
         },
       },
     );
-    console.log(`➡️ Mensaje enviado a ${toNumber}`);
+    console.log(`➡️ Mensaje enviado a ${toNumber} | ID: ${response.data.messages[0].id}`);
   } catch (error) {
     console.error(
       "❌ Error enviando a Meta:",
       error.response?.data || error.message,
     );
+    // ESTO TE DICE SI EL TOKEN O PHONE_ID ESTÁN MAL
   }
 };
 
@@ -107,8 +113,8 @@ const processMessage = async (message, userPhone) => {
       state.data.areaKey = msg;
       state.step = "ASK_SUBAREA";
       const options = SUBAREAS[msg]
-       .map((item, i) => `${i + 1}. ${item}`)
-       .join("\n");
+      .map((item, i) => `${i + 1}. ${item}`)
+      .join("\n");
       responseText = `Seleccionaste ${AREAS[msg]}.\n¿Qué tipo de proceso necesitas?\n${options}`;
     }
   }
@@ -171,7 +177,7 @@ const processMessage = async (message, userPhone) => {
 
       responseText =
         msg === "1"
-         ? `Perfecto ${state.data.name} 🙌 Enviamos tu caso al área de ${state.data.area}. Un asesor te contactará pronto.`
+        ? `Perfecto ${state.data.name} 🙌 Enviamos tu caso al área de ${state.data.area}. Un asesor te contactará pronto.`
           : `Perfecto ${state.data.name} 👍 Hemos registrado tu solicitud para contacto posterior.`;
 
       delete userState[userPhone]; // Finalizamos el estado
