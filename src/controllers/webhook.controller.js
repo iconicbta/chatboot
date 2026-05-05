@@ -1,4 +1,5 @@
 const { processMessage } = require("../services/message.service");
+const Lead = require("../models/Lead");
 
 // 🔥 WEBHOOK TWILIO
 const handleIncomingMessage = async (req, res) => {
@@ -29,4 +30,15 @@ const handleIncomingMessage = async (req, res) => {
   }
 };
 
-module.exports = { handleIncomingMessage };
+// 🔥 ENDPOINT PARA FRONTEND (LEADS)
+const getLeads = async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json(leads);
+  } catch (error) {
+    console.error("❌ Error obteniendo leads:", error);
+    res.status(500).json({ error: "Error obteniendo leads" });
+  }
+};
+
+module.exports = { handleIncomingMessage, getLeads };
