@@ -1,32 +1,21 @@
-const Lead = require("../models/Lead");
+const { processMessage } = require("../services/message.service");
 
-// 🔥 TWILIO WEBHOOK
-const handleIncomingMessage = (req, res) => {
+const handleIncomingMessage = async (req, res) => {
   const mensaje = req.body.Body;
   const from = req.body.From;
 
-  console.log("Mensaje recibido:", mensaje);
-  console.log("De:", from);
+  console.log("Mensaje:", mensaje);
 
-  // Respuesta en formato XML (OBLIGATORIO para Twilio)
-  const response = `
-    <Response>
-      <Message>Hola, recibí: ${mensaje}</Message>
-    </Response>
-  `;
+  // 👇 aquí llamas tu lógica
+  const respuesta = await processMessage(mensaje, from);
 
+  // 👇 Twilio responde con XML
   res.set("Content-Type", "text/xml");
-  res.send(response);
-};
-
-// Dashboard (lo dejamos igual)
-const getLeads = async (req, res) => {
-  try {
-    const leads = await Lead.find().sort({ createdAt: -1 });
-    res.json(leads);
-  } catch (e) {
-    res.status(500).json({ error: "Error" });
-  }
+  res.send(`
+    <Response>
+      <Message>${respuesta}</Message>
+    </Response>
+  `);
 };
 
 module.exports = { handleIncomingMessage, getLeads };
