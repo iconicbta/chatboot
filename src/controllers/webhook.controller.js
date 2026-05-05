@@ -30,7 +30,7 @@ const handleIncomingMessage = async (req, res) => {
   }
 };
 
-// 🔥 ENDPOINT PARA FRONTEND (LEADS)
+// 🔥 GET LEADS (frontend)
 const getLeads = async (req, res) => {
   try {
     const leads = await Lead.find().sort({ createdAt: -1 });
@@ -41,4 +41,27 @@ const getLeads = async (req, res) => {
   }
 };
 
-module.exports = { handleIncomingMessage, getLeads };
+// 🔥 NUEVO: AGREGAR NOTA (LO QUE TE FALTABA)
+const addNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text, date } = req.body;
+
+    const updatedLead = await Lead.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          notes: { text, date },
+        },
+      },
+      { new: true }
+    );
+
+    res.json(updatedLead);
+  } catch (error) {
+    console.error("❌ Error agregando nota:", error);
+    res.status(500).json({ error: "Error agregando nota" });
+  }
+};
+
+module.exports = { handleIncomingMessage, getLeads, addNote };
