@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+const NoteSchema = new mongoose.Schema({
+  text: String,
+  date: String,
+});
+
 const LeadSchema = new mongoose.Schema({
   name: String,
   phone: { type: String, default: "No suministrado" },
@@ -7,7 +12,13 @@ const LeadSchema = new mongoose.Schema({
   subarea: String,
   amount: String,
   description: String,
-  notes: { type: Array, default: [] },
+
+  // 🔥 mejor estructurado
+  notes: {
+    type: [NoteSchema],
+    default: [],
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
 
