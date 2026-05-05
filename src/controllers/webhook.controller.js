@@ -1,42 +1,25 @@
 const Lead = require("../models/Lead");
-const { processMessage } = require("../services/message.service");
 
-// 1. GET = Solo verificación de Meta
-const verifyWebhook = (req, res) => {
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
-
-  if (mode === "subscribe" && token === process.env.VERIFY_TOKEN) {
-    console.log("Webhook verificado correctamente");
-    return res.status(200).send(challenge);
-  }
-  return res.sendStatus(403); // Era 200, debe ser 403 si falla
-};
-
-// 2. POST = Recibir mensajes - AQUÍ ESTÁ EL CAMBIO CLAVE
+// 🔥 TWILIO WEBHOOK
 const handleIncomingMessage = (req, res) => {
-  // QUITA EL ASYNC ^^^^^
+  const mensaje = req.body.Body;
+  const from = req.body.From;
 
-  // 1. RESPONDE A META YA MISMO, antes de cualquier await
-  res.sendStatus(200);
+  console.log("Mensaje recibido:", mensaje);
+  console.log("De:", from);
 
-  // 2. Después procesas. No uses await aquí porque ya respondiste
-  try {
-    const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  // Respuesta en formato XML (OBLIGATORIO para Twilio)
+  const response = `
+    <Response>
+      <Message>Hola, recibí: ${mensaje}</Message>
+    </Response>
+  `;
 
-    if (message?.text?.body) {
-      // No pongas await. Deja que corra en background
-      processMessage(message.text.body, message.from).catch(err => {
-        console.error("Error procesando mensaje:", err);
-      });
-    }
-  } catch (e) {
-    console.error("Error en webhook:", e);
-  }
+  res.set("Content-Type", "text/xml");
+  res.send(response);
 };
 
-// 3. Dashboard
+// Dashboard (lo dejamos igual)
 const getLeads = async (req, res) => {
   try {
     const leads = await Lead.find().sort({ createdAt: -1 });
@@ -46,4 +29,4 @@ const getLeads = async (req, res) => {
   }
 };
 
-module.exports = { verifyWebhook, handleIncomingMessage, getLeads };
+module.exports = { handleIncomingMessage, getLeads };
