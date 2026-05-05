@@ -3,13 +3,9 @@ const router = express.Router();
 
 const {
   handleIncomingMessage,
-  getLeads,
 } = require("../controllers/webhook.controller");
 
-// Twilio usa POST
+// Webhook Twilio
 router.post("/", handleIncomingMessage);
-
-// Opcional dashboard
-router.get("/leads", getLeads);
 
 module.exports = router;
