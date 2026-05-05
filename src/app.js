@@ -5,12 +5,13 @@ require("dotenv").config();
 
 const webhookRoutes = require("./routes/webhook.routes");
 
-const app = express(); // Primero inicializamos
+const app = express();
 
-// Middlewares
 app.use(cors());
+
+// 🔥 IMPORTANTE PARA TWILIO
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Rutas
 app.use("/webhook", webhookRoutes);
