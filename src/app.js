@@ -1,5 +1,4 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -9,9 +8,9 @@ const app = express();
 
 app.use(cors());
 
-// 🔥 IMPORTANTE PARA TWILIO
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// 🔥 Express nativo (mejor que body-parser)
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // Rutas
 app.use("/webhook", webhookRoutes);
